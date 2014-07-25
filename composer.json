@@ -1,0 +1,19 @@
+{
+    "name": "devitek/torrent-fake-seeder",
+    "description": "Fake a torrent's seed",
+    "authors": [
+        {
+            "name": "Thomas SIEFFERT",
+            "email": "caporaldead@devitek.fr"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Devitek\\": "src/Devitek"
+        }
+    },
+    "minimum-stability": "dev"
+}
