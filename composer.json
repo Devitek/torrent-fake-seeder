@@ -15,5 +15,5 @@
             "Devitek\\": "src/Devitek"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
