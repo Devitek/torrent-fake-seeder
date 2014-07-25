@@ -3,7 +3,7 @@
 This script is just a PoC. Provide your torrent file and use it like this :
 
 ```
-php composer.phar require devitek/torrent-fake-seeder
+php composer.phar require devitek/torrent-fake-seeder dev-master
 ```
 
 and then create a php file and put this :
