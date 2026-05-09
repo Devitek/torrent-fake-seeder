@@ -114,7 +114,7 @@ class Seeder
      */
     protected function getRandomSpeed()
     {
-        return (rand(($this->speed * 100 * 0.85), ($this->speed * 100 * 1.10)) / 100);
+        return (rand((int) ($this->speed * 100 * 0.85), (int) ($this->speed * 100 * 1.10)) / 100);
     }
 
     /**

@@ -10,6 +10,7 @@ use Exception;
  * @license  http://www.gnu.org/licenses/gpl.html GNU General Public License version 3
  * @version  Release: 1.2 (6 july 2010)
  */
+#[\AllowDynamicProperties]
 class Torrent
 {
     /**
@@ -356,8 +357,9 @@ class Torrent
             }
 
             while ($done = curl_multi_info_read($curl)) {
-                $info    = curl_getinfo($done['handle']);
-                $tracker = array_shift(explode('?', $info['url'], 2));
+                $info        = curl_getinfo($done['handle']);
+                $urlParts    = explode('?', $info['url'], 2);
+                $tracker     = array_shift($urlParts);
 
                 if (empty($info['http_code'])) {
                     $scrape[$tracker] = self::set_error(new Exception('Tracker request timeout (' . $timeout . 's)'), true);
@@ -702,7 +704,9 @@ class Torrent
      */
     static protected function announce_list($announce, $merge = array())
     {
-        return array_map(create_function('$a', 'return (array) $a;'), array_merge((array) $announce, (array) $merge));
+        return array_map(static function ($a) {
+            return (array) $a;
+        }, array_merge((array) $announce, (array) $merge));
     }
 
     /**
@@ -730,7 +734,10 @@ class Torrent
      */
     static protected function pack(& $data)
     {
-        return pack('H*', sha1($data)) . ($data = null);
+        $hash = pack('H*', sha1($data));
+        $data = null;
+
+        return $hash;
     }
 
     /**
@@ -808,9 +815,11 @@ class Torrent
             return self::set_error(new Exception('Failed to open file: "' . $file . '"'));
         }
 
+        $nameParts = explode(DIRECTORY_SEPARATOR, $file);
+
         return array(
             'length'       => $size,
-            'name'         => end(explode(DIRECTORY_SEPARATOR, $file)),
+            'name'         => end($nameParts),
             'piece length' => $piece_length,
             'pieces'       => $this->pieces($handle, $piece_length)
         );
@@ -828,7 +837,9 @@ class Torrent
     {
         $files = array_map('realpath', $files);
         sort($files);
-        usort($files, create_function('$a,$b', 'return strrpos($a,DIRECTORY_SEPARATOR)-strrpos($b,DIRECTORY_SEPARATOR);'));
+        usort($files, static function ($a, $b) {
+            return strrpos($a, DIRECTORY_SEPARATOR) - strrpos($b, DIRECTORY_SEPARATOR);
+        });
         $path       = explode(DIRECTORY_SEPARATOR, dirname(realpath(current($files))));
         $pieces     = null;
         $info_files = array();
