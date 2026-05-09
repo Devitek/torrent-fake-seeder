@@ -156,7 +156,15 @@ class Seeder
      */
     protected function getUrl($uploaded = 0, $event = 'started')
     {
-        return $this->torrent->announce()
+        $announce = $this->torrent->announce();
+
+        // announce() may return a tiered announce-list (array of arrays).
+        // Flatten it down to the first tracker URL.
+        while (is_array($announce)) {
+            $announce = reset($announce);
+        }
+
+        return $announce
         . '?info_hash=' . urlencode(pack('H*', $this->torrent->hash_info()))
         . '&peer_id=' . $this->client->getPeerId()
         . '&key=' . $this->client->getKey()
