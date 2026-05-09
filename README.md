@@ -2,6 +2,12 @@
 
 This script is just a PoC. Provide your torrent file and use it like this :
 
+```
+php composer.phar require devitek/torrent-fake-seeder
+```
+
+and then create a php file and put this :
+
 ```php
 <?php
 
@@ -26,4 +32,8 @@ $seeder->bind('error', function ($data) {
 $seeder->seed();
 ```
 
-Please use it carefully.
+This will **fakely** seed your `file.torrent` file.
+
+---
+
+Please use it carefully. Feel free to test, fork and improve it.
