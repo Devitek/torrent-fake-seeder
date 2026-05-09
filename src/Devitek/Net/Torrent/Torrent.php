@@ -69,6 +69,8 @@ class Torrent
         foreach ($meta as $key => $value) {
             $this->{$key} = $value;
         }
+
+        return true;
     }
 
     /**
@@ -86,7 +88,10 @@ class Torrent
      */
     public function error()
     {
-        return empty(self::$errors) ? false : self::$errors[0]->getMessage();
+        /** @var Exception $exception */
+        $exception = self::$errors[0];
+
+        return empty(self::$errors) ? false : $exception->getMessage();
     }
 
     /**
@@ -169,7 +174,8 @@ class Torrent
             $this->touch($this->info['name'] = (string) $name);
     }
 
-    /** Getter and setter of private flag
+    /**
+     * Getter and setter of private flag
      *
      * @param null|boolean is private or not (optional, if omitted it's a getter)
      *
@@ -182,7 +188,8 @@ class Torrent
             $this->touch($this->info['private'] = $private ? 1 : 0);
     }
 
-    /** Getter and setter of webseed(s) url list ( GetRight implementation )
+    /**
+     * Getter and setter of webseed(s) url list ( GetRight implementation )
      *
      * @param null|string|array webseed or webseeds mirror list (optional, if omitted it's a getter)
      *
@@ -195,7 +202,8 @@ class Torrent
             $this->touch($this->{'url-list'} = is_string($urls) ? $urls : (array) $urls);
     }
 
-    /** Getter and setter of httpseed(s) url list ( Bittornado implementation )
+    /**
+     * Getter and setter of httpseed(s) url list ( Bittornado implementation )
      *
      * @param null|string|array httpseed or httpseeds mirror list (optional, if omitted it's a getter)
      *
@@ -210,7 +218,8 @@ class Torrent
 
     /**** Analyze BitTorrent ****/
 
-    /** Get piece length
+    /**
+     * Get piece length
      * @return integer piece length or null if not set
      */
     public function piece_length()
@@ -220,7 +229,8 @@ class Torrent
             null;
     }
 
-    /** Compute hash info
+    /**
+     * Compute hash info
      * @return string hash info or null if info not set
      */
     public function hash_info()
@@ -230,7 +240,8 @@ class Torrent
             null;
     }
 
-    /** List torrent content
+    /**
+     * List torrent content
      *
      * @param integer|null size precision (optional, if omitted returns sizes in bytes)
      *
@@ -254,7 +265,8 @@ class Torrent
         return $files;
     }
 
-    /** List torrent content pieces and offset(s)
+    /**
+     * List torrent content pieces and offset(s)
      * @return array file(s) and pieces/offset(s) list, file(s) as keys and pieces/offset(s) as values
      */
     public function offset()
@@ -368,7 +380,8 @@ class Torrent
 
     /**** Save and Send ****/
 
-    /** Save torrent file to disk
+    /**
+     * Save torrent file to disk
      *
      * @param null|string name of the file (optional)
      *
@@ -379,7 +392,8 @@ class Torrent
         return file_put_contents(is_null($filename) ? $this->info['name'] . '.torrent' : $filename, $this->encode($this));
     }
 
-    /** Send torrent file to client
+    /**
+     * Send torrent file to client
      *
      * @param null|string name of the file (optional)
      *
@@ -418,7 +432,8 @@ class Torrent
         }
     }
 
-    /** Encode torrent string
+    /**
+     * Encode torrent string
      *
      * @param string string to encode
      *
@@ -429,7 +444,8 @@ class Torrent
         return strlen($string) . ':' . $string;
     }
 
-    /** Encode torrent integer
+    /**
+     * Encode torrent integer
      *
      * @param integer integer to encode
      *
@@ -440,7 +456,8 @@ class Torrent
         return 'i' . $integer . 'e';
     }
 
-    /** Encode torrent dictionary or list
+    /**
+     * Encode torrent dictionary or list
      *
      * @param array array to encode
      *
@@ -482,7 +499,8 @@ class Torrent
         return (array) self::decode_data($data);
     }
 
-    /** Decode torrent data
+    /**
+     * Decode torrent data
      *
      * @param string $data data to decode
      *
@@ -508,7 +526,8 @@ class Torrent
         }
     }
 
-    /** Decode torrent dictionary
+    /**
+     * Decode torrent dictionary
      *
      * @param string $data data to decode
      *
@@ -540,7 +559,8 @@ class Torrent
         return $dictionary;
     }
 
-    /** Decode torrent list
+    /**
+     * Decode torrent list
      *
      * @param string $data data to decode
      *
@@ -560,7 +580,8 @@ class Torrent
         return $list;
     }
 
-    /** Decode torrent string
+    /**
+     * Decode torrent string
      *
      * @param string $data data to decode
      *
@@ -595,27 +616,33 @@ class Torrent
     {
         $start = 0;
         $end   = strpos($data, 'e');
+
         if ($end === 0) {
             self::set_error(new Exception('Empty integer'));
         }
+
         if (self::char($data) == '-') {
             $start++;
         }
+
         if (substr($data, $start, 1) == '0' && ($start != 0 || $end > $start + 1)) {
             self::set_error(new Exception('Leading zero in integer'));
         }
+
         if (!ctype_digit(substr($data, $start, $end))) {
             self::set_error(new Exception('Non-digit characters in integer'));
         }
+
         $integer = substr($data, 0, $end);
         $data    = substr($data, $end + 1);
 
-        return $integer + 0;
+        return intval($integer);
     }
 
     /**** Internal Helpers ****/
 
-    /** Build torrent info
+    /**
+     * Build torrent info
      *
      * @param string|array $data         source  folder/file(s) path
      * @param              $piece_length integer piece length
@@ -637,7 +664,8 @@ class Torrent
         }
     }
 
-    /** Set torrent creator and creation date
+    /**
+     * Set torrent creator and creation date
      *
      * @param mixed $void any param
      *
@@ -651,10 +679,11 @@ class Torrent
         return $void;
     }
 
-    /** Add an error to errors stack
+    /**
+     * Add an error to errors stack
      *
-     * @param Exception error to add
-     * @param boolean   return error message or not (optional, default to false)
+     * @param Exception $exception error to add
+     * @param boolean   $message   return error message or not (optional, default to false)
      *
      * @return boolean|string return false or error message if requested
      */
@@ -663,7 +692,8 @@ class Torrent
         return (array_unshift(self::$errors, $exception) && $message) ? $exception->getMessage() : false;
     }
 
-    /** Build announce list
+    /**
+     * Build announce list
      *
      * @param string|array announce url / list
      * @param string|array announce url / list to add (optionnal)
@@ -675,9 +705,10 @@ class Torrent
         return array_map(create_function('$a', 'return (array) $a;'), array_merge((array) $announce, (array) $merge));
     }
 
-    /** Get the first announce url in a list
+    /**
+     * Get the first announce url in a list
      *
-     * @param array announce list (array of arrays if tiered trackers)
+     * @param array $announce announce list (array of arrays if tiered trackers)
      *
      * @return string first announce url
      */
@@ -690,9 +721,10 @@ class Torrent
         return $announce;
     }
 
-    /** Helper to pack data hash
+    /**
+     * Helper to pack data hash
      *
-     * @param string data
+     * @param string $data data
      *
      * @return string packed data hash
      */
@@ -701,10 +733,11 @@ class Torrent
         return pack('H*', sha1($data)) . ($data = null);
     }
 
-    /** Helper to build file path
+    /**
+     * Helper to build file path
      *
-     * @param array  file path
-     * @param string base folder
+     * @param array  $path   file path
+     * @param string $folder base folder
      *
      * @return string real file path
      */
@@ -715,7 +748,8 @@ class Torrent
         return join(DIRECTORY_SEPARATOR, $path);
     }
 
-    /** Helper to test if an array is a list
+    /**
+     * Helper to test if an array is a list
      *
      * @param array array to test
      *
@@ -732,11 +766,12 @@ class Torrent
         return true;
     }
 
-    /** Build pieces depending on piece length from a file handler
+    /**
+     * Build pieces depending on piece length from a file handler
      *
-     * @param ressource file handle
-     * @param integer   piece length
-     * @param boolean   is last piece
+     * @param mixed   $handle       file handle
+     * @param integer $piece_length piece length
+     * @param boolean $last         is last piece
      *
      * @return string pieces
      */
@@ -759,10 +794,11 @@ class Torrent
         return $pieces . ($last && $piece ? self::pack($piece) : null);
     }
 
-    /** Build torrent info from single file
+    /**
+     * Build torrent info from single file
      *
-     * @param string  file path
-     * @param integer piece length
+     * @param string  $file         file path
+     * @param integer $piece_length piece length
      *
      * @return array torrent info
      */
@@ -780,10 +816,11 @@ class Torrent
         );
     }
 
-    /** Build torrent info from files
+    /**
+     * Build torrent info from files
      *
-     * @param array   file list
-     * @param integer piece length
+     * @param array   $files        file list
+     * @param integer $piece_length piece length
      *
      * @return array torrent info
      */
@@ -820,10 +857,11 @@ class Torrent
         );
     }
 
-    /** Build torrent info from folder content
+    /**
+     * Build torrent info from folder content
      *
-     * @param string  folder path
-     * @param integer piece length
+     * @param string  $dir          folder path
+     * @param integer $piece_length piece length
      *
      * @return array torrent info
      */
@@ -832,9 +870,10 @@ class Torrent
         return $this->files(self::scandir($dir), $piece_length);
     }
 
-    /** Helper to return the first char of encoded data
+    /**
+     * Helper to return the first char of encoded data
      *
-     * @param string encoded data
+     * @param string $data encoded data
      *
      * @return string|boolean first char of encoded data or false if empty data
      */
@@ -847,10 +886,11 @@ class Torrent
 
     /**** Public Helpers ****/
 
-    /** Helper to format size in bytes to human readable
+    /**
+     * Helper to format size in bytes to human readable
      *
-     * @param integer size in bytes
-     * @param integer precision after coma
+     * @param integer $size      size in bytes
+     * @param integer $precision precision after coma
      *
      * @return string formated size in appropriate unit
      */
@@ -864,9 +904,10 @@ class Torrent
         return round($size, $precision) . ' ' . ($next ? prev($units) : end($units));
     }
 
-    /** Helper to return filesize (even bigger than 2Gb -linux only- and distant files size)
+    /**
+     * Helper to return filesize (even bigger than 2Gb -linux only- and distant files size)
      *
-     * @param string file path
+     * @param string $file file path
      *
      * @return double|boolean filesize or false if error
      */
@@ -879,14 +920,17 @@ class Torrent
                 return (int) preg_replace($pattern, '$1', reset($content_length));
             }
         }
+
+        return false;
     }
 
-    /** Helper to open file to read (even bigger than 2Gb, linux only)
+    /**
+     * Helper to open file to read (even bigger than 2Gb, linux only)
      *
-     * @param                string file path
-     * @param integer|double file   size (optional)
+     * @param                string $file file path
+     * @param integer|double        $size file   size (optional)
      *
-     * @return ressource|boolean file handle or false if error
+     * @return mixed|boolean file handle or false if error
      */
     static public function fopen($file, $size = null)
     {
@@ -901,9 +945,10 @@ class Torrent
         }
     }
 
-    /** Helper to scan directories files and sub directories recursivly
+    /**
+     * Helper to scan directories files and sub directories recursivly
      *
-     * @param string directory path
+     * @param string $dir directory path
      *
      * @return array directory content list
      */
@@ -923,9 +968,10 @@ class Torrent
         return $paths;
     }
 
-    /** Helper to check if url exists
+    /**
+     * Helper to check if url exists
      *
-     * @param string url to check
+     * @param string $url url to check
      *
      * @return boolean does the url exist or not
      */
@@ -936,10 +982,11 @@ class Torrent
             false;
     }
 
-    /** Helper to check if a file is a torrent
+    /**
+     * Helper to check if a file is a torrent
      *
-     * @param string file location
-     * @param float  http timeout (optional, default to self::timeout 30s)
+     * @param string    $file    file location
+     * @param float|int $timeout http timeout (optional, default to self::timeout 30s)
      *
      * @return boolean is the file a torrent or not
      */
@@ -948,12 +995,13 @@ class Torrent
         return self::file_get_contents($file, $timeout, 0, 11) === 'd8:announce';
     }
 
-    /** Helper to get (distant) file content
+    /**
+     * Helper to get (distant) file content
      *
-     * @param string  file location
-     * @param float   http timeout (optional, default to self::timeout 30s)
-     * @param integer starting offset (optional, default to null)
-     * @param integer content length (optional, default to null)
+     * @param string    $file    file location
+     * @param float|int $timeout http timeout (optional, default to self::timeout 30s)
+     * @param integer   $offset  starting offset (optional, default to null)
+     * @param integer   $length  content length (optional, default to null)
      *
      * @return string|boolean file content or false if error
      */
