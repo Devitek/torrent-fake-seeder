@@ -1,6 +1,7 @@
 {
     "name": "devitek/torrent-fake-seeder",
     "description": "Fake a torrent's seed",
+    "license": "MIT",
     "authors": [
         {
             "name": "Thomas SIEFFERT",
